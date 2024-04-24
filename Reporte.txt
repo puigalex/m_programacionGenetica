@@ -67,6 +67,12 @@ Para selección se utilizó el método de la ruleta sin elitismo, eventualmente 
 \section{Resultados}
 Por el momento no he podido obtener resultados debido a mi problema con la cruza, al ejecutar el programa se paridad el mejor resultado que he obtenido es 0.875, lo cual quiere decir que el algoritmo obtuvo 7/8. Para poder mejorar esto solucionaré el problema con la cruza y me asegurare también que la profundidad de cada individuo no crezca de más al momento de hacer una mutación o una cruza ya que esto tambien puede terminar ofuscando las soluciones.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{imgs/v1.png}
+    \caption{Resultados obtenidos hasta el momento para el problema de paridad, el comportamiento obtenido hasta el momento se ve muy aleatorio, es por eso que no se puede ver un crecimiento en el accuracy o fitness definido}
+\end{figure}
+
 \section{Conclusiones}
 Durante el desarrollo de la tarea aprendí muy bien como es que se aplican los operadores de algoritmos genéticos en la programación genética. Las mutaciónes y cruzas son operadores que afectan demasiado a los individuos ya que se intercambian secciones completas del árbol, esto puede ayudar mucho para salir de optimos locales pero también puede afectar mucho a la solución.
 En la implementación se permitió que la mutación o la cruza generara individuos con profundidad mayor a la permitida y luego con otra función se recortan al máximo permitido, esto puede ser como los genes que no codifican hacia ningún fenotipo y que en realidad no afectan mucho sobre la selección natural.
