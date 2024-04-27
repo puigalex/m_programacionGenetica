@@ -26,58 +26,80 @@ Para el segundo problema estaremos utilizando los siguientes parametros:
 \end{itemize}
 
 \section{Desarrollo}
-La implementación se realizó en python, utilizando una clase llamada Nodo la cual representa cada nodo en el árbol de la función, se implementaron funciones recursivas para la navegación del árbol, esto trajo problemas a la aplicación los cuales veremos a mayor detalle más adelante. 
-
-\subsection{Clase Nodo}
-Para contener la estructura de los árboles de las funciones se implementó una clase llamada Nodo, la cual contiene los siguientes atributos:
+La implementación se realizó en python, utilizando la paquetería de DEAP. Inicialmente intenté hacerlo con arboles y con notación polaca, pero debido a unos bugs (en ambos acercamientos) que no he podido resolver opté por utilizar la paquetería DEAP que recomendaron en clase.
+Para realizar un algoritmo de programación genética se realizan los siguientes pasos:
 \begin{itemize}
-    \item \textbf{value:} Valor del nodo, puede ser una operación o una constante.
-    \item \textbf{hijos:} Lista de los hijos a los que apunta un nodo en especifico.
-    \item \textbf{agregar\_hijo():} Función que agrega un nuevo nodo al árbol. Implementado para la función de cruza.
-\end{itemize}
+    \item Definición de función de evaluación: Se define una función que pueda recibir a un individuo y lo evalue sobre el set de datos que se tiene de entrenamiento. En el caso de regresión se envia el error cuadrático medio y en el caso de paridad se envia el accuracy (cuantos correctos tuvo).
+    \item Definición de los operadores: Se definen los operadores (nodos) que se utilizarán para resolver los problemas. En \textbf{Paridad} fueron (AND, OR, NOT, XOR) y en \textbf{Regresión} fueron (+, -, *, division protegida, cos).
+    \item Crear estructura del individuo: Se crea la clase individuo junto con el fitness que tendrá (maximización o minimización).
+    \item Armar toolbox: Se arma la "caja de herramientas" que se utilizará durante las generaciones. Se definen elementos como:
+    \begin{itemize}
+        \item Método de selección
+        \item Método de cruza
+        \item Método de mutación
+        \item Max/min de nodos para la población inicial
+    \end{itemize}
+   \item Definir la métricas de cada generación: Se definen las métricas que queremos salvar sobre la ejecución de cada generación (promedio, peor/mejor individuo, desviación estandar etc.) 
 
-\subsection{Crear Población}
-Se hizo una funcion llamada crear\_arbol() la cual va generando los nodos de manera recursiva. Si el valor para el nodo es una operación que requiere de dos parametros entonces crean los dos hijos de manera recursiva. Cuando se llega a una profuncidad máxima o se cumple con una probabilidad de terminar el arbol se agregan los nodos terminales (A,B,C).
 
-\subsection{Mutación}
-PAra la mutación se realizó una función que recorre el árbol con una probabilidad de mutación de 1/num\_nodos. Cuando en un nodo se cumple la probabilidad de mutación entonces se genera un árbol nuevo y se coloca en el nodo actual.
 
-\subsection{Cruza}
-La cruza es la parte de la implementación donde mayor problema se presentó. Para la cruza se tienen que elegir dos nodos aleatorios en cada uno de los padres y se intercambia los nodos incluyendo toda la subestructura de los nodos.
-
-Para la cruza se realizaron tres funciones:
-\begin{itemize}
-    \item \textbf{encontrar\_subarbol}: Función que recorre el árbol y dada una probabilidad de 1/num\_nodos encuentra un nodo aleatorio. Regresa ese nodo junto con todos sus descendientes.
-    \item \textbf{insertar\_subarbol}: Función que recibe un nodo y un subarbol y lo inserta en el nodo.
-    \item \textbf{cruzamiento}: Función que ejecuta las funciones anteriores para cada uno de los padres. Recibe dos padres y una probabilidad de cruza y retorna dos hijos ya con mutación aplicada.
-\end{itemize}
-
-El problema que se presentó fue al momento de encontrar los subarboles e intercambiarlos, al ser una función recursiva se me ha dificultado el poder debuggear a detalle cada una de las cruzas que se realizan.  
-En la función de encontrar\_subarbol tuve complicaciones pues en algunos casos en especifico me estaba regresando la funcion un arbol vacio (None) el cual impide que se realice una cruza exitosa pues ninguno de los operadores pueden funcionar con una entrada como (None).
-
-\subsection{Evaluación}
-Para la evaluación se realizaron dos funciones, una para evaluar al individuo con un solo renglon de la tabla de verdad y otra que evalua con toda la tabla de verdad y da una metrica de fitness o accuracy.
-\begin{equation}
-    fitness = RespuestasCorrectas / TotalRespuestas
-\end{equation}
-
-\subsection{Selección}
-Para selección se utilizó el método de la ruleta sin elitismo, eventualmente lo implementaré con elitismo pero debido al problema encontrado en la cruza (de mayor prioridad) no se pudo implementar.
 
 \section{Resultados}
-Por el momento no he podido obtener resultados debido a mi problema con la cruza, al ejecutar el programa se paridad el mejor resultado que he obtenido es 0.875, lo cual quiere decir que el algoritmo obtuvo 7/8. Para poder mejorar esto solucionaré el problema con la cruza y me asegurare también que la profundidad de cada individuo no crezca de más al momento de hacer una mutación o una cruza ya que esto tambien puede terminar ofuscando las soluciones.
+\subsection{Paridad sin XOR}
+En el caso del problema de paridad sin la función de XOR el modelo logró llegar a individuos los cuales tenian 8/8 aciertos. Aunque no en todas las ejecuciones lo lograban, en múltiples corridas los mejores individuos no excedieron de 7/8 aciertos.
+El mejor individuo que se encontró fue el siguiente:
+
+\begin{verbatim}
+    and_(or_(and_(var0, or_(var1, not_(var0))), var2), or_(or_(var1, and_(0, and_(var0, var1))), var0))
+\end{verbatim}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.45\textwidth]{imgs/v1.png}
-    \caption{Resultados obtenidos hasta el momento para el problema de paridad, el comportamiento obtenido hasta el momento se ve muy aleatorio, es por eso que no se puede ver un crecimiento en el accuracy o fitness definido}
+    \includegraphics[width=0.45\textwidth]{imgs/Parodad.png}
+    \caption{Resultados de la ejecución del problema de paridad sin XOR}
 \end{figure}
 
+\subsection{Paridad con XOR}
+En el caso de paridad utilizando XOR, el modelo fue capaz de encontrar a un individuo que llegara a 8/8 aciertos en un número menor de ejecuciones. Después de correrlo multiples veces algunas soluciones eran notablemente mas largas que otras, aunque lograban solucionar el problema de paridad sin errores.
+El mejor individuo que se encontró fue el siguiente:
+
+\begin{verbatim}
+    xor(and_(and_(var2, var2), not_(and_(var1, 0))), and_(not_(xor(var0, var1)), not_(and_(var1, 0))))
+\end{verbatim}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{imgs/Paridad_XOR.png}
+    \caption{Resultados de la ejecución del problema de paridad con XOR}
+\end{figure}
+
+\subsection{Regresión simbólica}
+Para regresión logistica se utiliza elementos muy similares al problema de paridad, cambiando unicamente los operadores, la función de evaluación y el fitness, en este caso como es un problema de regresión se utiliza error medio cuadrático.
+El mejor individuo que se encontró fue el siguiente:
+\begin{verbatim}
+sub(sub(sub(add(sub(-1, add(-1, neg(sub(add(cos(x), add(cos(x), 1)), add(cos(sub(sub(protectedDiv(-1, protectedDiv(0, cos(-1))), x), x)), -1))))), sub(sub(protectedDiv(-1, protectedDiv(add(cos(sub(0, cos(-1))), add(sub(sub(protectedDiv(add(cos(-1), add(x, x)), protectedDiv(1, cos(protectedDiv(sub(-1, x), neg(1))))), x), sub(0, x)), -1)), -1)), x), add(cos(-1), sub(neg(sub(add(cos(neg(x)), add(sub(sub(x, x), sub(-1, add(cos(x), add(x, 1)))), 1)), add(cos(1), neg(-1)))), add(add(cos(sub(0, x)), add(sub(protectedDiv(1, cos(protectedDiv(sub(-1, 1), neg(x)))), add(-1, add(protectedDiv(sub(-1, cos(x)), cos(x)), 1))), 0)), add(cos(-1), add(protectedDiv(sub(sub(protectedDiv(-1, protectedDiv(0, cos(1))), x), sub(-1, add(cos(x), add(x, 1)))), cos(protectedDiv(sub(-1, 1), neg(x)))), 1))))))), add(sub(-1, add(cos(cos(protectedDiv(sub(-1, 1), protectedDiv(sub(-1, cos(x)), neg(x))))), add(cos(sub(cos(x), x)), add(cos(sub(0, x)), add(sub(sub(protectedDiv(1, cos(protectedDiv(sub(-1, 1), protectedDiv(sub(-1, cos(x)), neg(x))))), x), sub(-1, add(add(x, add(-1, 1)), add(x, cos(sub(-1, 1)))))), -1))))), sub(neg(sub(add(cos(cos(-1)), add(sub(protectedDiv(add(x, 1), neg(x)), sub(-1, add(add(x, add(protectedDiv(1, cos(x)), cos(protectedDiv(sub(-1, x), neg(1))))), add(x, 1)))), -1)), add(cos(add(protectedDiv(1, cos(protectedDiv(sub(-1, 1), sub(-1, add(cos(-1), cos(x)))))), 1)), -1))), 1))), add(sub(x, -1), neg(sub(add(protectedDiv(1, cos(protectedDiv(sub(-1, cos(cos(x))), protectedDiv(sub(-1, cos(x)), neg(x))))), add(sub(sub(protectedDiv(-1, x), x), sub(add(-1, add(protectedDiv(sub(-1, cos(x)), cos(1)), 1)), add(protectedDiv(protectedDiv(1, cos(protectedDiv(sub(-1, 1), neg(x)))), cos(x)), sub(protectedDiv(1, cos(protectedDiv(sub(-1, 1), protectedDiv(sub(-1, cos(x)), neg(x))))), x)))), 1)), add(cos(-1), neg(x)))))), mul(sub(add(protectedDiv(sub(protectedDiv(cos(x), cos(protectedDiv(sub(-1, 1), neg(x)))), cos(x)), neg(x)), 1), neg(sub(x, add(cos(-1), neg(-1))))), 0))
+\end{verbatim}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{imgs/Reg_simb.png}
+    \caption{Resultados de la ejecución del problema de regresión simbólica}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{imgs/Ajuste_regrecion.png}
+    \caption{Ajuste de la regresión simbólica a los puntos de entrenamiento}
+\end{figure}
+
+
+
+
 \section{Conclusiones}
-Durante el desarrollo de la tarea aprendí muy bien como es que se aplican los operadores de algoritmos genéticos en la programación genética. Las mutaciónes y cruzas son operadores que afectan demasiado a los individuos ya que se intercambian secciones completas del árbol, esto puede ayudar mucho para salir de optimos locales pero también puede afectar mucho a la solución.
-En la implementación se permitió que la mutación o la cruza generara individuos con profundidad mayor a la permitida y luego con otra función se recortan al máximo permitido, esto puede ser como los genes que no codifican hacia ningún fenotipo y que en realidad no afectan mucho sobre la selección natural.
+Durante el desarrollo de esta tarea tuve algunos problemas con las implementaciones desde cero, fueron problemas de aplicación, no de comprensión de los temas. Pero al utilizar DEAP pude aplicar lo aprendido en clase y en los intentos previos con una paquetería que automatiza algunos de los procesos para realizar el entrenamiento.
 
-
+En el caso de paridad podemos ver que es un problema el cual es relativamente sencillo para este tipo de algoritmos, tanto usando como no usando XOR, aunque al usar XOR se llego a una solución viable en menos generaciones.
+Mientras que para el problema de regresión se puede notar que se logra crear una función que es una función sobreajustada (Esto se puede notas ya que para pasar por todos los puntos la función presenta fluctuaciones muy grandes), aunque esto tambien es de esperarse ya que el set de datos fue generado con números aleatorios por lo cual si dejamos correr las poblaciones por muchas generaciones van a seguir haciendo todo para minimizar la función de evaluación.
 
 @Book{koza1992genetic2,
   author    = {John R. Koza},
@@ -87,7 +109,3 @@ En la implementación se permitió que la mutación o la cruza generara individu
   address   = {Cambridge, Massachusetts and London, England},
   note      = {Page iii},
 }
-
-
-Notas:
-El eliminas las capas que exceden el limite es como tener genes que no codifican nada
